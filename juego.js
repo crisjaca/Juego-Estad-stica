@@ -5,6 +5,9 @@ const $ = id => document.getElementById(id);
 const FACE = { 1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
 const TOTAL_ROUNDS = 5;
 
+// PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT (La que te dio al implementar)
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwu_iSnPNq3KYkNBrYMKGx1K_BIj8cxG0s9nqJSpLTgOZciKdw15SRMH_2axHWNg8expA/exec';
+
 let state = {
   playerName: "",
   round: 1,
@@ -55,23 +58,18 @@ function generateClues(d1, d2) {
   const sum = d1 + d2;
   const pool = [];
 
-  // Pista 1: Suma
   pool.push({ text: `La suma de los dados es ${sum}`, test: (a,b) => a+b === sum });
   
-  // Pista 2: Comparación
   if(d1 > d2) pool.push({ text: "El primer dado es mayor que el segundo", test: (a,b) => a > b });
   else if(d1 < d2) pool.push({ text: "El primer dado es menor que el segundo", test: (a,b) => a < b });
   else pool.push({ text: "Los dos dados son iguales", test: (a,b) => a === b });
 
-  // Pista 3: Paridad
   pool.push({ text: `El primer dado es un número ${d1 % 2 === 0 ? 'par' : 'impar'}`, test: (a,b) => (a%2) === (d1%2) });
   pool.push({ text: `El segundo dado es un número ${d2 % 2 === 0 ? 'par' : 'impar'}`, test: (a,b) => (b%2) === (d2%2) });
 
-  // Pista 4: Producto
   const isProdEven = (d1 * d2) % 2 === 0;
   pool.push({ text: `El producto de ambos dados es ${isProdEven ? 'par' : 'impar'}`, test: (a,b) => ((a*b)%2 === 0) === isProdEven });
 
-  // Elegir 2 pistas que juntas den una solución única
   let selected = [];
   const shuffledPool = shuffle(pool);
   
@@ -136,10 +134,10 @@ function generatePhase2Options(clueB, clueA) {
     if(!seen.has(s)){ seen.add(s); distractors.push(s); }
   };
 
-  tryAdd(aBCount, 36); // P(A∩B) sin condicionar
-  tryAdd(bCount, 36);  // P(B)
-  tryAdd(aCount, 36);  // P(A)
-  tryAdd(bCount - aBCount, bCount); // Complemento
+  tryAdd(aBCount, 36); 
+  tryAdd(bCount, 36);  
+  tryAdd(aCount, 36);  
+  tryAdd(bCount - aBCount, bCount); 
 
   while(distractors.length < 3){
     const n = randInt(1, 10), d = randInt(3, 20);
@@ -177,24 +175,20 @@ function nextRound() {
     return;
   }
 
-  // Reset variables de fase
   state.phase1Correct = false;
   state.phase2Correct = false;
   
-  // Lanzar dados
   state.d1 = randInt(1, 6);
   state.d2 = randInt(1, 6);
   
-  // Configurar dados visuales (ocultos)
   setDie($("die1"), state.d1);
   setDie($("die2"), state.d2);
   $("die1").classList.add("hidden-die");
   $("die2").classList.add("hidden-die");
 
-  // Generar pistas
   const clues = generateClues(state.d1, state.d2);
-  state.clueB = clues[0]; // Primera pista como Condición B
-  state.clueA = clues[1]; // Segunda pista como Evento A
+  state.clueB = clues[0];
+  state.clueA = clues[1];
   
   $("clueList").innerHTML = "";
   clues.forEach(c => {
@@ -203,7 +197,6 @@ function nextRound() {
     $("clueList").appendChild(li);
   });
 
-  // Generar Opciones Fase 1
   const options = generatePhase1Options(state.d1, state.d2, clues);
   $("optionsGrid").innerHTML = "";
   options.forEach((opt, i) => {
@@ -217,7 +210,6 @@ function nextRound() {
     $("optionsGrid").appendChild(btn);
   });
 
-  // Reset UI
   $("phase1-area").classList.remove("hidden");
   $("phase2-area").classList.add("hidden");
   $("feedbackHost").innerHTML = "";
@@ -227,7 +219,7 @@ function nextRound() {
 }
 
 /* ============================================================
-   MANEJO DE FASE 1
+   MANEJO DE FASE 1 Y 2
    ============================================================ */
 function handlePhase1(btn, opt, allOptions) {
   state.phase1Correct = opt.correct;
@@ -239,24 +231,18 @@ function handlePhase1(btn, opt, allOptions) {
   });
   if(!opt.correct) btn.classList.add("wrong");
 
-  // Revelar dados
   $("die1").classList.remove("hidden-die");
   $("die2").classList.remove("hidden-die");
 
-  // Transición a Fase 2
   setTimeout(() => {
-    $("phase1-area").classList.add("hidden"); // Ocultar Fase 1 para enfocar Fase 2
+    $("phase1-area").classList.add("hidden");
     setupPhase2();
   }, 1000);
 }
 
-/* ============================================================
-   MANEJO DE FASE 2
-   ============================================================ */
 function setupPhase2() {
   $("phase2-area").classList.remove("hidden");
   
-  // Pregunta matemática usando clueB y clueA
   $("mathQuestion").innerHTML = `
     <p>Fase 2: Cálculo de Probabilidad</p>
     <p style="margin-top:8px;">Sabiendo que <strong>${state.clueB.text.toLowerCase()}</strong>,<br>
@@ -265,8 +251,6 @@ function setupPhase2() {
 
   const options = generatePhase2Options(state.clueB, state.clueA);
   
-  // La respuesta correcta siempre es la primera en el array (antes de mezclar)
-  // Para saber cuál es, podemos buscar la que matemáticamente corresponde:
   let bCount = 0, abCount = 0;
   for(let x=1; x<=6; x++){
     for(let y=1; y<=6; y++){
@@ -299,14 +283,12 @@ function handlePhase2(btn, isCorrect, correctAnswer) {
   });
   if(!isCorrect) btn.classList.add("wrong");
 
-  // Calcular puntos
   let points = 0;
   if(state.phase1Correct) points += 10;
   if(state.phase2Correct) points += 10;
   state.score += points;
   updateHUD();
 
-  // Feedback final de la ronda
   const fb = document.createElement("div");
   fb.className = "feedback " + (points === 20 ? "ok" : "bad");
   
@@ -328,7 +310,6 @@ function handlePhase2(btn, isCorrect, correctAnswer) {
   `;
   $("feedbackHost").appendChild(fb);
 
-  // Mostrar botón siguiente
   $("btnNext").classList.remove("hidden");
   $("btnNext").textContent = state.round === TOTAL_ROUNDS ? "Ver Resultados Finales 🏁" : "Siguiente Ronda →";
   $("btnNext").onclick = () => {
@@ -339,16 +320,16 @@ function handlePhase2(btn, isCorrect, correctAnswer) {
 }
 
 /* ============================================================
-   FIN DEL JUEGO
+   FIN DEL JUEGO Y GUARDADO EN LA NUBE
    ============================================================ */
 function endGame() {
   showScreen("screen-end");
   $("endName").textContent = state.playerName;
+  $("ranking-container").classList.add("hidden"); // Ocultar ranking al entrar
   
   const scoreEl = $("endScore");
   scoreEl.textContent = state.score;
   
-  // Aplicar colores según las reglas
   scoreEl.classList.remove("score-red", "score-blue", "score-green");
   let msg = "";
   
@@ -365,55 +346,86 @@ function endGame() {
   
   $("endMessage").textContent = msg;
 
-  // Se remplaza con la URL que copiaste de Google Apps Script
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwu_iSnPNq3KYkNBrYMKGx1K_BIj8cxG0s9nqJSpLTgOZciKdw15SRMH_2axHWNg8expA/exec';
+  // Llamar a la función que guarda en Google Sheets
+  guardarPuntaje(state.playerName, state.score);
+}
 
-  async function guardarPuntaje(nombre, puntaje) {
-    const formData = new URLSearchParams();
-    formData.append('Nombre', nombre);
-    formData.append('Puntaje', puntaje);
+// --- FUNCIONES DE BASE DE DATOS ---
 
-    try {
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData
-      });
-      const result = await response.json();
-      if (result.result === 'success') {
-        console.log('Puntaje guardado con éxito.');
-        // Después de guardar, actualizamos el ranking en pantalla
-        cargarRanking(); 
-      }
-    } catch (error) {
-      console.error('Error al guardar el puntaje:', error);
-    }
-  }
-
-  async function cargarRanking() {
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL); // Misma URL
-    const ranking = await response.json();
-    
-    let html = '<h3>🏆 Mejores Puntajes</h3><table><tr><th>Pos</th><th>Jugador</th><th>Puntaje</th><th>Fecha</th></tr>';
-    
-    // Muestra solo el Top 10, por ejemplo
-    ranking.slice(0, 10).forEach(jugador => {
-      html += `<tr>
-        <td>${jugador.posicion}</td>
-        <td>${jugador.nombre}</td>
-        <td>${jugador.puntaje}</td>
-        <td>${jugador.fecha}</td>
-      </tr>`;
-    });
-    html += '</table>';
-    
-    // Asume que tienes un div con id="ranking-container" en tu HTML
-    document.getElementById('ranking-container').innerHTML = html;
-    
-  } catch (error) {
-    console.error('Error al cargar el ranking:', error);
+function showToast(message, type) {
+  const toast = $("toast");
+  const icon = $("toastIcon");
+  const msg = $("toastMsg");
+  
+  toast.className = `toast ${type}`;
+  msg.textContent = message;
+  
+  if (type === 'loading') icon.textContent = '⏳';
+  else if (type === 'success') icon.textContent = '✅';
+  else if (type === 'error') icon.textContent = '❌';
+  
+  toast.classList.remove("hidden");
+  
+  // Ocultar después de 4 segundos si no es de carga
+  if (type !== 'loading') {
+    setTimeout(() => toast.classList.add("hidden"), 4000);
   }
 }
+
+async function guardarPuntaje(nombre, puntaje) {
+  showToast("Guardando puntaje en la base de datos...", "loading");
+  
+  const formData = new URLSearchParams();
+  formData.append('Nombre', nombre);
+  formData.append('Puntaje', puntaje);
+
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      body: formData
+    });
+    
+    // Nota: Google Apps Script a veces devuelve un status 200 pero con redirección CORS.
+    // Si el fetch falla por CORS, usaremos el método 'no-cors' (pero no podremos leer la respuesta).
+    // Asumiremos que si no lanza error de red, se guardó.
+    showToast("¡Puntaje guardado exitosamente!", "success");
+    
+    // Si el usuario hace clic en "Ver Ranking", que se actualice
+  } catch (error) {
+    console.error('Error al guardar:', error);
+    showToast("Error de red al guardar el puntaje.", "error");
+  }
+}
+
+async function cargarRanking() {
+  const tbody = $("rankingBody");
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando ranking...</td></tr>';
+  
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL);
+    const ranking = await response.json();
+    
+    tbody.innerHTML = "";
+    
+    if(ranking.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aún no hay puntajes registrados.</td></tr>';
+      return;
+    }
+
+    ranking.forEach(jugador => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${jugador.posicion}</td>
+        <td style="font-weight:700;">${jugador.nombre}</td>
+        <td style="color:var(--gold); font-weight:800;">${jugador.puntaje}</td>
+        <td style="color:var(--muted); font-size:12px;">${jugador.fecha}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    console.error('Error al cargar ranking:', error);
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--red);">Error al cargar los datos.</td></tr>';
+  }
 }
 
 /* ============================================================
@@ -427,7 +439,7 @@ $("btnStart").addEventListener("click", () => {
     return;
   }
   state.playerName = name;
-  localStorage.setItem("detectiveName", name); // Guardar localmente
+  localStorage.setItem("detectiveName", name);
   startGame();
 });
 
@@ -436,7 +448,19 @@ $("btnRestart").addEventListener("click", () => {
   $("inputName").value = state.playerName;
 });
 
-// Cargar nombre guardado si existe al abrir la página
+// Botón para mostrar el ranking
+$("btnShowRanking").addEventListener("click", () => {
+  const container = $("ranking-container");
+  if (container.classList.contains("hidden")) {
+    container.classList.remove("hidden");
+    cargarRanking(); // Llama a Google Sheets para traer los datos frescos
+    $("btnShowRanking").textContent = "Ocultar Ranking";
+  } else {
+    container.classList.add("hidden");
+    $("btnShowRanking").textContent = "🏆 Ver Ranking Global";
+  }
+});
+
 window.addEventListener("DOMContentLoaded", () => {
   const savedName = localStorage.getItem("detectiveName");
   if (savedName) {

@@ -9,6 +9,12 @@
 <body>
 <div class="wrap">
 
+  <!-- BANNER DE NOTIFICACIÓN (TOAST) -->
+  <div id="toast" class="toast hidden">
+    <span id="toastIcon">⏳</span>
+    <span id="toastMsg">Guardando puntaje...</span>
+  </div>
+
   <!-- PANTALLA 1: LOGIN -->
   <section id="screen-login" class="screen active">
     <div class="login-box">
@@ -72,7 +78,26 @@
       <p style="color:var(--muted)">Puntaje final de <span id="endName"></span></p>
       <div class="end-score" id="endScore">0</div>
       <p id="endMessage" style="font-size:16px; font-weight:600; margin-bottom:24px;"></p>
-      <button class="btn-next" id="btnRestart" style="max-width:300px; margin:0 auto;">Volver a jugar</button>
+      
+      <div style="display:flex; gap:12px; justify-content:center; margin-bottom:24px; flex-wrap:wrap;">
+        <button class="btn-next" id="btnRestart" style="flex:1; min-width:200px;">Volver a jugar</button>
+        <button class="btn-next" id="btnShowRanking" style="flex:1; min-width:200px; background:linear-gradient(180deg, #5aa9ff, #3a82c9); color:#fff;">🏆 Ver Ranking Global</button>
+      </div>
+
+      <!-- CONTENEDOR DEL RANKING -->
+      <div id="ranking-container" class="hidden">
+        <h3 style="color:var(--gold); margin-bottom:12px;">🏆 Mejores Puntajes</h3>
+        <div class="table-wrapper">
+          <table id="rankingTable">
+            <thead>
+              <tr><th>Pos</th><th>Jugador</th><th>Puntaje</th><th>Fecha</th></tr>
+            </thead>
+            <tbody id="rankingBody">
+              <!-- Aquí JavaScript insertará las filas -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </section>
 
