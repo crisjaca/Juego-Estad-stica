@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detective de Probabilidades · 2 Fases</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- PANTALLA 1: LOGIN -->
+  <section id="screen-login" class="screen active">
+    <div class="login-box">
+      <h1>🕵️ Detective de Probabilidades</h1>
+      <p>Ingresa tu nombre para comenzar la investigación.</p>
+      <input type="text" id="inputName" placeholder="Tu nombre aquí..." maxlength="15">
+      <button id="btnStart">Comenzar Juego</button>
+    </div>
+  </section>
+
+  <!-- PANTALLA 2: JUEGO -->
+  <section id="screen-game" class="screen">
+    <header>
+      <div class="player-info">
+        <div class="player-avatar">👤</div>
+        <div class="player-name" id="displayName">Jugador</div>
+      </div>
+      <div class="stats">
+        <div class="stat-box">
+          <div class="label">Ronda</div>
+          <div class="value" id="displayRound">1/5</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Puntos</div>
+          <div class="value" id="displayScore">0</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dados -->
+    <div class="dice-row">
+      <div class="die hidden-die" id="die1"></div>
+      <div class="die hidden-die" id="die2"></div>
+    </div>
+
+    <!-- FASE 1 -->
+    <div id="phase1-area">
+      <div class="clues-container">
+        <div class="clues-title">🕵️ Pistas del caso</div>
+        <ul class="clue-list" id="clueList"></ul>
+      </div>
+      <div class="options-title">Fase 1: ¿Qué combinación cayó?</div>
+      <div class="options-grid" id="optionsGrid"></div>
+    </div>
+
+    <!-- FASE 2 -->
+    <div id="phase2-area" class="hidden phase2-container">
+      <div class="math-question" id="mathQuestion"></div>
+      <div class="math-options" id="mathOptions"></div>
+    </div>
+
+    <!-- Feedback y Siguiente -->
+    <div id="feedbackHost"></div>
+    <button class="btn-next hidden" id="btnNext">Siguiente Ronda →</button>
+  </section>
+
+  <!-- PANTALLA 3: FIN DEL JUEGO -->
+  <section id="screen-end" class="screen">
+    <div class="end-box">
+      <h2>Fin de la investigación</h2>
+      <p style="color:var(--muted)">Puntaje final de <span id="endName"></span></p>
+      <div class="end-score" id="endScore">0</div>
+      <p id="endMessage" style="font-size:16px; font-weight:600; margin-bottom:24px;"></p>
+      <button class="btn-next" id="btnRestart" style="max-width:300px; margin:0 auto;">Volver a jugar</button>
+    </div>
+  </section>
+
+</div>
+<script src="juego.js"></script>
+</body>
+</html>
