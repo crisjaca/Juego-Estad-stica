@@ -426,17 +426,15 @@ async function guardarPuntaje(nombre, puntaje) {
   }
 }
 
-async function cargarRanking() {
+function cargarRanking() {
   const tbody = $("rankingBody");
   tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando ranking...</td></tr>';
   
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL);
-    const ranking = await response.json();
-    
+  // Esta función se ejecuta automáticamente cuando Google devuelve los datos
+  window.procesarRanking = function(ranking) {
     tbody.innerHTML = "";
     
-    if(ranking.length === 0) {
+    if(!ranking || ranking.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aún no hay puntajes registrados.</td></tr>';
       return;
     }
@@ -451,10 +449,23 @@ async function cargarRanking() {
       `;
       tbody.appendChild(tr);
     });
-  } catch (error) {
-    console.error('Error al cargar ranking:', error);
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--red);">Error al cargar los datos.</td></tr>';
-  }
+
+    // Limpiamos la etiqueta script para no dejar basura en el HTML
+    const scriptTag = document.getElementById('jsonp-script');
+    if (scriptTag) scriptTag.remove();
+  };
+
+  // Creamos la etiqueta <script> que llama a Google
+  const script = document.createElement('script');
+  script.id = 'jsonp-script';
+  script.src = GOOGLE_SCRIPT_URL + '&callback=procesarRanking';
+  
+  script.onerror = function() {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--red);">Error al cargar. Verifica tu conexión.</td></tr>';
+    script.remove();
+  };
+
+  document.body.appendChild(script);
 }
 
 /* ============================================================
