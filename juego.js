@@ -372,28 +372,57 @@ function showToast(message, type) {
   }
 }
 
+// async function guardarPuntaje(nombre, puntaje) {
+//   showToast("Guardando puntaje en la base de datos...", "loading");
+  
+//   const formData = new URLSearchParams();
+//   formData.append('Nombre', nombre);
+//   formData.append('Puntaje', puntaje);
+
+//   try {
+//     const response = await fetch(GOOGLE_SCRIPT_URL, {
+//       method: 'POST',
+//       body: formData
+//     });
+    
+//     // Nota: Google Apps Script a veces devuelve un status 200 pero con redirección CORS.
+//     // Si el fetch falla por CORS, usaremos el método 'no-cors' (pero no podremos leer la respuesta).
+//     // Asumiremos que si no lanza error de red, se guardó.
+//     showToast("¡Puntaje guardado exitosamente!", "success");
+    
+//     // Si el usuario hace clic en "Ver Ranking", que se actualice
+//   } catch (error) {
+//     console.error('Error al guardar:', error);
+//     showToast("Error de red al guardar el puntaje.", "error");
+//   }
+// }
 async function guardarPuntaje(nombre, puntaje) {
   showToast("Guardando puntaje en la base de datos...", "loading");
   
-  const formData = new URLSearchParams();
-  formData.append('Nombre', nombre);
-  formData.append('Puntaje', puntaje);
+  // Usamos un objeto simple, no URLSearchParams
+  const data = {
+    Nombre: nombre,
+    Puntaje: puntaje
+  };
 
   try {
     const response = await fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
-      body: formData
+      mode: 'cors', // Mantenemos CORS
+      redirect: 'follow',
+      headers: {
+        // ¡Esta línea es la clave! Evita el bloqueo del navegador
+        'Content-Type': 'text/plain;charset=utf-8' 
+      },
+      body: JSON.stringify(data) // Enviamos el objeto como texto JSON
     });
     
-    // Nota: Google Apps Script a veces devuelve un status 200 pero con redirección CORS.
-    // Si el fetch falla por CORS, usaremos el método 'no-cors' (pero no podremos leer la respuesta).
-    // Asumiremos que si no lanza error de red, se guardó.
-    showToast("¡Puntaje guardado exitosamente!", "success");
+    if (!response.ok) throw new Error('Error en la respuesta del servidor');
     
-    // Si el usuario hace clic en "Ver Ranking", que se actualice
+    showToast("¡Puntaje guardado exitosamente!", "success");
   } catch (error) {
     console.error('Error al guardar:', error);
-    showToast("Error de red al guardar el puntaje.", "error");
+    showToast("Error al guardar. Revisa la consola.", "error");
   }
 }
 
