@@ -428,14 +428,16 @@ async function guardarPuntaje(nombre, puntaje) {
 
 function cargarRanking() {
   const tbody = $("rankingBody");
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando ranking...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando ranking de hoy...</td></tr>';
   
-  // Esta función se ejecuta automáticamente cuando Google devuelve los datos
   window.procesarRanking = function(ranking) {
     tbody.innerHTML = "";
     
     if(!ranking || ranking.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aún no hay puntajes registrados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aún no hay puntajes registrados hoy. ¡Sé el primero!</td></tr>';
+      // Limpiamos el script
+      const scriptTag = document.getElementById('jsonp-script');
+      if (scriptTag) scriptTag.remove();
       return;
     }
 
@@ -450,12 +452,10 @@ function cargarRanking() {
       tbody.appendChild(tr);
     });
 
-    // Limpiamos la etiqueta script para no dejar basura en el HTML
     const scriptTag = document.getElementById('jsonp-script');
     if (scriptTag) scriptTag.remove();
   };
 
-  // Creamos la etiqueta <script> que llama a Google
   const script = document.createElement('script');
   script.id = 'jsonp-script';
   script.src = GOOGLE_SCRIPT_URL + '&callback=procesarRanking';
