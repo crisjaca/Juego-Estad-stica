@@ -458,7 +458,7 @@ function cargarRanking() {
 
   const script = document.createElement('script');
   script.id = 'jsonp-script';
-  script.src = GOOGLE_SCRIPT_URL + '&callback=procesarRanking';
+  script.src = GOOGLE_SCRIPT_URL + '?callback=procesarRanking';
   
   script.onerror = function() {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--red);">Error al cargar. Verifica tu conexión.</td></tr>';
